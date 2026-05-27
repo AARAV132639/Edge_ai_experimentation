@@ -13,3 +13,7 @@
 ### Ref: main.py
 - Why are we changing the dimension of image
 
+ To-do:
+    1. RelU from scratch
+    2. Pooling on multichannel feature maps
+    3. Build full CNN blocks
