@@ -1,0 +1,112 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from torchvision.datasets import CIFAR10
+
+from src.multi_filter_convolution import multi_filter_convolve
+#from src.multi_channel_convolution import multi_channel_convolve
+
+
+# Loading dataset
+dataset= CIFAR10(
+    root="./src/datasets",
+    train= True,
+    download= False
+)
+
+# Getting first sample
+image, label= dataset[0]
+
+#Convert PIL image---> numpy
+image= np.array(image)
+
+print("Original image shape:", image.shape)
+
+#converting (H,W,C) ---> (C,H,W)
+image= np.transpose(image,(2,0,1))
+print ("Transposed image shape:", image.shape)
+
+## Using single filter:
+"""
+# Random RGB kernel
+kernel= np.random.randn(3,3,3)
+
+# Running convolution
+output= multi_channel_convolve(
+    image= image,
+    kernel= kernel,
+    stride=1,
+    padding=1
+)
+"""
+
+#Create 8 random RGB filters
+kernels= np.random.randn(8,3,3,3)
+
+# Run covoution:
+feature_maps= multi_filter_convolve(
+    image= image,
+    kernels= kernels,
+    stride=1,
+    padding=1
+)
+
+print("Feature maps shape:", feature_maps.shape)
+
+
+# Normalizing display
+"""
+- Why are we normalizing dispaly though?
+
+"""
+normalized_maps= []
+
+for fmap in feature_maps:
+    norm= (fmap-fmap.min())/(fmap.max()-fmap.min())
+    normalized_maps.append(norm)
+
+
+# plot original +feature maps
+plt.figure(figsize=(14,8))
+plt.subplot(3,3,1)
+plt.imshow(np.transpose(image,(1,2,0)))
+plt.title("Original RGB")
+plt.axis("off")
+
+for i in range(8):
+    plt.subplot(3,3,i+2)
+    plt.imshow(normalized_maps[i], cmap='gray')
+    plt.title(f"Filter{i+1}")
+    plt.axis("off")
+
+plt.tight_layout()
+plt.show()
+
+
+"""
+
+## Run 1: Applied 1 kernel with random weights to test the pipeline mechanics by importing multi_channel_convolution.py
+    - Implemented the output in gray scale
+    - Observation: Ironically, both the orignal and output were blurry on dispaly
+    - Reason: CIFAR10 images are small in size having dimension 32x32 however when matplotlib dispalays it upscales it. Hence we got minecraft resolution dispaly
+
+## Run 2: Applied 8 kernels with random weights and got 8 different features map of same
+    - 1 RGB image
+    - 8 filters
+    - 8 feature maps
+
+### Question time :)
+    - Why are we getting the output of feature map in gray scale?
+    Ans is simple dear, because the feature map is NOT AN RGB IMAGE!
+
+    Yeah, that's right.
+    - Input: (3,32,32)----> Meaning: 1. Red channel 2. Green channel 3. Blue channel
+    - But after applying a filter we are technically doing: summation of all convolution applied on each channel
+    - This sum produces: One scalar per pixel location and this becomes a single activation map. Hence grayscale
+    - Which is why we are using 8 maps where each filter asks different questions like 
+                                                                                        1. Do I see vertical edge?
+                                                                                        2. Do I see red-green contrast?
+                                                                                        3. Do I see texture etc etc
+    So what did we learn?
+    - Grayscale output is not a limitation but mathematically correct CNN behaviour
+
+"""
