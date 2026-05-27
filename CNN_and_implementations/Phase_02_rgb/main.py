@@ -52,6 +52,17 @@ feature_maps= multi_filter_convolve(
 
 print("Feature maps shape:", feature_maps.shape)
 
+## Update 3: Adding 2nd convolution layer
+second_layer_kernels= np.random.randn(4,8,3,3)
+second_feature_maps= multi_filter_convolve(
+    image= feature_maps,
+    kernels= second_layer_kernels,
+    stride=1,
+    padding=1
+)
+
+print("Second layer shape:", second_feature_maps) # (4,32,32) ---> 8 input channels, 4 learned filters, 4 output maps
+
 
 # Normalizing display
 """
@@ -76,6 +87,21 @@ for i in range(8):
     plt.subplot(3,3,i+2)
     plt.imshow(normalized_maps[i], cmap='gray')
     plt.title(f"Filter{i+1}")
+    plt.axis("off")
+
+plt.tight_layout()
+plt.show()
+
+# plotting 2nd convolution layer
+plt.figure(figsize=(10,8))
+
+for i in range(4):
+    fmap= second_feature_maps[i]
+    norm= (fmap-fmap.min())/(fmap.max()-fmap.min())
+
+    plt.subplot(2,2,i+1)
+    plt.imshow(norm,cmap='gray')
+    plt.title(f"Layer 2 Map{i+1}")
     plt.axis("off")
 
 plt.tight_layout()
@@ -108,5 +134,8 @@ plt.show()
                                                                                         3. Do I see texture etc etc
     So what did we learn?
     - Grayscale output is not a limitation but mathematically correct CNN behaviour
+
+## Run 3: First CNN stack:
+    - Input---> conv layer 1---> conv layer 2
 
 """
