@@ -11,8 +11,10 @@ class DenseLayer:
         - output size---> number of output neurons
         """
 
-        self.weights = np.random.randn(output_size, input_size)*0.01
+        self.weights = np.random.randn(output_size, input_size)*0.01 # Why this line exisits?
         self.biases = np.zeros((output_size,1))
+
+        self.input= None # Why this change has been made?
 
     def forward(self,x):
             """
@@ -23,11 +25,25 @@ class DenseLayer:
             """
 
             # Convert to column vector
-            x= x.reshape(-1,1)
+            self.input= x.reshape(-1,1)
 
-            output= np.dot(self.weights,x) + self.biases
+            output= np.dot(self.weights,self.input) + self.biases
 
             return output.flatten()
+    
+    def backward(self, dL_dz, learning_rate):
+         
+         dL_dz= dL_dz.reshape(-1,1)
+
+         dL_dW = np.dot(dL_dz, self.input.T)
+
+         dL_db= dL_dz
+
+         # Gradient descent
+         self.weights-= learning_rate*dL_dW
+         self.biases-= learning_rate*dL_db
+
+         return dL_dW, dL_db
 
 if __name__=="__main__":
     sample_input = np.random.randn(2048)
